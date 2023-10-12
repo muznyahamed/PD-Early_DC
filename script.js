@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const deleteAllBtn = document.getElementById('deleteAllBtn');
 
   // Fetch and display uploaded files
-  async function fetchFiles() {
+    async function fetchFiles() {
     try {
       const response = await fetch('https://parkison-data-collection.glitch.me/files');
       const files = await response.json();
@@ -15,17 +15,48 @@ document.addEventListener('DOMContentLoaded', () => {
         li.textContent = file.name;
         li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
+        const buttonsDiv = document.createElement('div'); // Create a container for buttons
+        buttonsDiv.className = 'btn-group';
+
+        const downloadBtn = document.createElement('button');
+        downloadBtn.textContent = 'Download';
+        downloadBtn.className = 'btn btn-primary';
+        downloadBtn.addEventListener('click', () => downloadFile(file._id));
+
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
         deleteBtn.className = 'btn btn-danger';
         deleteBtn.addEventListener('click', () => deleteFile(file._id));
 
-        li.appendChild(deleteBtn);
+        buttonsDiv.appendChild(downloadBtn);
+        buttonsDiv.appendChild(deleteBtn);
+
+        li.appendChild(buttonsDiv); // Add the button container to the list item
         fileList.appendChild(li);
       });
     } catch (error) {
       console.error('Error fetching files:', error);
       alert('Error fetching files. Please try again later.');
+    }
+  }
+
+  // Function to download a file
+  async function downloadFile(id) {
+    try {
+      const response = await fetch(`https://parkison-data-collection.glitch.me/download/${id}`);
+      const blob = await response.blob();
+
+      // Create a download link for the file
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'file_name.extension'; // Specify the desired file name
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      alert('Error downloading file. Please try again later.');
     }
   }
 
@@ -58,6 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Error deleting all files. Please try again later.');
     }
   });
+
+
 
   // Handle file upload form submission
   uploadForm.addEventListener('submit', async (event) => {
